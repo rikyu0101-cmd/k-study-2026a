@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="札幌係長試験" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1E564D" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%231E564D'/%3E%3Ctext x='64' y='88' text-anchor='middle' font-size='68' font-weight='700' fill='%23FFFFFF' font-family='sans-serif'%3E%E4%BF%82%3C/text%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%231E564D'/%3E%3Ctext x='64' y='88' text-anchor='middle' font-size='68' font-weight='700' fill='%23FFFFFF' font-family='sans-serif'%3E%E4%BF%82%3C/text%3E%3C/svg%3E" />
+  <title>札幌市係長職候補者試験 スマート演習アプリ</title>
+  <style>
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#F6F5F0; color:#1E2422; font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif; }
+    .box { text-align:center; padding:24px; max-width:320px; }
+    .badge { width:56px; height:56px; border-radius:16px; background:#1E564D; color:#fff; font-size:28px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; }
+    .spin { width:24px; height:24px; border:3px solid #D9DDD9; border-top-color:#1E564D; border-radius:50%; animation:sp .8s linear infinite; margin:12px auto; }
+    @keyframes sp { to { transform:rotate(360deg); } }
+    .msg { font-size:13px; color:#525A57; line-height:1.6; }
+    .err { display:none; margin-top:14px; padding:12px; border-radius:12px; background:#FBEAEA; color:#9E2A2B; font-size:12px; text-align:left; word-break:break-all; }
+    .btn { margin-top:10px; padding:8px 16px; border:none; border-radius:10px; background:#1E564D; color:#fff; font-size:12px; font-weight:700; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="badge">係</div>
+    <div style="font-size:15px;font-weight:700;">札幌市係長職候補者試験</div>
+    <div class="spin" id="sp"></div>
+    <div class="msg" id="msg">最新版アプリを読み込んでいます…</div>
+    <div class="err" id="err"></div>
+  </div>
+  <script>
+    (async function () {
+      const API = 'https://script.google.com/macros/s/AKfycbzJKA3mU3MJZxJGyBRB_QD9EavrDr5ugtsUKTQI19-dmh6YUD-EWZTKx2sPoDTD6rAl/exec?type=bundle';
+      const CACHE_KEY = 'kakaricho_shell_html_v1';
+      function mount(html) {
+        document.open();
+        document.write(html);
+        document.close();
+      }
+      try {
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = setTimeout(() => ctrl && ctrl.abort(), 15000);
+        const res = await fetch(API, { method: 'GET', redirect: 'follow', signal: ctrl ? ctrl.signal : undefined });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || !data.html) throw new Error(data && data.error ? data.error : 'app_bundle.json の取得に失敗しました');
+        try { localStorage.setItem(CACHE_KEY, data.html); } catch (e) {}
+        mount(data.html);
+      } catch (e) {
+        let cached = null;
+        try { cached = localStorage.getItem(CACHE_KEY); } catch (_) {}
+        if (cached) {
+          mount(cached);
+          return;
+        }
+        document.getElementById('sp').style.display = 'none';
+        document.getElementById('msg').textContent = 'アプリの読み込みに失敗しました';
+        const errEl = document.getElementById('err');
+        errEl.style.display = 'block';
+        errEl.innerHTML = '原因：' + String(e && e.message ? e.message : e) + '<br><button class="btn" onclick="location.reload()">再試行</button>';
+      }
+    })();
+  </script>
+</body>
+</html>
